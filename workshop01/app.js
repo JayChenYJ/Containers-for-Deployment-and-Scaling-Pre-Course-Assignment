@@ -69,7 +69,7 @@ app.get('/', (req, res) => {
         <body>
             <div class="container">
                 <!-- Display an image -->
-                <img src="/images/placeholder.jpg" alt="Placeholder Image">
+                <img src="public/images/placeholder.jpg" alt="Placeholder Image">
 
                 <!-- Dynamic Quote -->
                 <div class="quote">${randomQuote}</div>
