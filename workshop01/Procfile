@@ -1,1 +1,1 @@
-web: node app.js
+web: cd workshop01 && npm start
