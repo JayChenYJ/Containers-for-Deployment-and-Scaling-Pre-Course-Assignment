@@ -2,7 +2,7 @@ const express = require('express');
 const app = express();
 
 // Serve static files from the 'public' directory
-app.use(express.static('public'));
+app.use(express.static(path.join(__dirname, '..', 'public')));
 
 const quotes = [
     "Logic will get you from A to B. Imagination will take you everywhere.",
@@ -69,7 +69,7 @@ app.get('/', (req, res) => {
         <body>
             <div class="container">
                 <!-- Display an image -->
-                <img src="public/images/placeholder.jpg" alt="Placeholder Image">
+                <img src="/images/placeholder.jpg" alt="Placeholder Image">
 
                 <!-- Dynamic Quote -->
                 <div class="quote">${randomQuote}</div>
