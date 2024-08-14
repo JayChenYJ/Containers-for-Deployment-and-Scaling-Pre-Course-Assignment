@@ -1,1 +1,1 @@
-web: cd workshop01 && npm start
+web: npm start
