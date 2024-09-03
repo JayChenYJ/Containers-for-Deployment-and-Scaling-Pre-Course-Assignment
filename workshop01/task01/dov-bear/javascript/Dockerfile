@@ -17,6 +17,8 @@ ENV PORT=5000
 ENV INSTANCE_NAME=dov-bear
 ENV INSTANCE_HASH=jaychenyj
 
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 CMD curl localhost:${PORT}/healthz || exit 1
+
 # Expose the port that the app will run on
 EXPOSE ${PORT}
 
