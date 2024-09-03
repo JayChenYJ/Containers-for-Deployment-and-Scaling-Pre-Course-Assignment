@@ -1,0 +1,60 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dov-deploy
+  namespace: myns
+  labels:
+    app: dov
+    name: dov-deploy
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      app: myapp
+      dept: eng
+      commit: abc123
+  template:
+    metadata:
+      name: mypod
+      namespace: myns
+      labels:
+        app: myapp
+        dept: eng
+        commit: abc123
+    spec:
+      containers:
+      - name: mypod-container
+        image: hnin111/dovbear:v3.0
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: app-port
+          containerPort: 3000
+        env:
+        - name: INSTANCE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: INSTANCE_HASH
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.labels['pod-template-hash']
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dov-svc
+  namespace: myns
+  labels:
+    app: dov-deploy
+    name: dov-svc
+spec:
+  type: ClusterIP
+  selector:
+    app: myapp
+    dept: eng
+    commit: abc123
+  ports:
+  - port: 8000
+    targetPort: app-port
