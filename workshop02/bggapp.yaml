@@ -8,6 +8,11 @@ metadata:
     app: app-deploy
     name: app-deploy
 spec:
+  strategy: 
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
   replicas: 3
   selector:
     matchLabels:
@@ -56,7 +61,7 @@ spec:
           valueFrom:
             secretKeyRef:
               name: myapp-secret
-              key: BGG_DB_HOST
+              key: BGG_DB_PASSWORD
 
 # svc create name in DNS
 # <service name>.<namespace>.svc.cluster.local
@@ -72,6 +77,8 @@ metadata:
     name: bggapp-svc
 spec:
   type: ClusterIP
+  #type: NodePort
+  #type: LoadBalancer
   selector: 
     app: myapp
     commit: app001

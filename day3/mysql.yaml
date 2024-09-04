@@ -1,0 +1,44 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config
+  namespace: default
+data:
+  readme.txt: |
+    hello,world
+    hello,world
+    hello,world
+  values.yaml: |
+    controller:
+      image: 
+        image: fred/myimage
+
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mysql-po
+  namespace: default
+spec:
+  volumes:
+    - name: config-vol
+      configMap:
+        name: config
+  # - name: data-vol
+  #   hostpath:
+  #     path: /opt/data
+  #     type: DirectoryOrCreate
+  containers:
+    - name: mysql-container
+      image: mysql:8
+      env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: changeit
+      ports:
+        - containerPort: 3306
+      volumeMounts:
+        - name: config-vol
+          mountPath: /opt/config
+          readOnly: true
+      resources: {}
