@@ -19,6 +19,8 @@ spec:
         app: codeserver
         name: codeserver-po
     spec:
+      securityContext:
+        fsGroup: 1000
       volumes:
         - name: workspace-vol
           persistentVolumeClaim:
@@ -27,6 +29,10 @@ spec:
         - name: codeserver-container
           image: linuxserver/code-server:amd64-4.92.2
           env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
             - name: TZ
               valueFrom:
                 configMapKeyRef:
@@ -57,6 +63,10 @@ spec:
           volumeMounts:
             - name: workspace-vol
               mountPath: /config/workspace
+          resources:
+            requests:
+              cpu: 200m
+              memory: 256Mi
 
 ---
 apiVersion: v1
