@@ -1,0 +1,118 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: minio-svc
+  namespace: minio-ns
+spec:
+  clusterIP: None # Headless service
+  selector:
+    app: minio
+  ports:
+    - name: minio
+      port: 9000
+      targetPort: 9000
+    - name: minio-console
+      port: 9090
+      targetPort: 9090
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: minio-sts
+  namespace: minio-ns
+spec:
+  serviceName: minio-svc
+  replicas: 4
+  selector:
+    matchLabels:
+      app: minio
+  template:
+    metadata:
+      labels:
+        app: minio
+    spec:
+      securityContext:
+        fsGroup: 1001
+      containers:
+        - name: minio
+          image: bitnami/minio:2024.8.29
+          # args:
+          #   - server
+          #   - --address=:$(MINIO_API_PORT_NUMBER)
+          #   - --console-address=:$(MINIO_CONSOLE_PORT_NUMBER)
+          #   - $(MINIO_DISTRIBUTED_NODES)
+          resources:
+            limits:
+              cpu: "200m"
+              memory: "250Mi"
+          ports:
+            - name: minio
+              containerPort: 9000 # MinIO API port
+            - name: minio-console
+              containerPort: 9090 # MinIO Console port
+          env:
+            - name: PUID
+              value: "1001"
+            - name: PGID
+              value: "1001"
+            - name: MINIO_ROOT_USER
+              valueFrom:
+                secretKeyRef:
+                  name: minio-secret
+                  key: MINIO_ROOT_USER
+            - name: MINIO_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: minio-secret
+                  key: MINIO_ROOT_PASSWORD
+            - name: MINIO_DATA_DIR
+              valueFrom:
+                configMapKeyRef:
+                  name: minio-config
+                  key: MINIO_DATA_DIR
+            - name: MINIO_DISTRIBUTED_MODE_ENABLED
+              valueFrom:
+                configMapKeyRef:
+                  name: minio-config
+                  key: MINIO_DISTRIBUTED_MODE_ENABLED
+            - name: MINIO_DISTRIBUTED_NODES
+              valueFrom:
+                configMapKeyRef:
+                  name: minio-config
+                  key: MINIO_DISTRIBUTED_NODES
+            - name: MINIO_API_PORT_NUMBER
+              valueFrom:
+                configMapKeyRef:
+                  name: minio-config
+                  key: MINIO_API_PORT_NUMBER
+            - name: MINIO_CONSOLE_PORT_NUMBER
+              valueFrom:
+                configMapKeyRef:
+                  name: minio-config
+                  key: MINIO_CONSOLE_PORT_NUMBER
+          # readinessProbe:
+          #   httpGet:
+          #     path: /minio/health/ready
+          #     port: 9000
+          #   initialDelaySeconds: 30
+          #   periodSeconds: 10
+          #   failureThreshold: 10
+          # livenessProbe:
+          #   httpGet:
+          #     path: /minio/health/live
+          #     port: 9000
+          #   initialDelaySeconds: 30
+          #   periodSeconds: 10
+          volumeMounts:
+            - name: data
+              mountPath: /data
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 10Gi # Adjust storage size as needed
