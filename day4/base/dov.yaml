@@ -14,7 +14,7 @@ metadata:
     app: dov
     name: dov-deploy
 spec:
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
       app: dov
@@ -64,53 +64,3 @@ spec:
   ports:
     - port: 3000
       targetPort: 3000
-
----
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: dov-ing
-  namespace: dovns
-  labels:
-    name: dov-ing
-    app: dov
-spec:
-  ingressClassName: nginx
-  rules:
-    - host: dov.104.248.98.107.nip.io
-      http:
-        paths:
-          - pathType: Prefix
-            path: "/"
-            backend:
-              service:
-                name: dov-svc
-                port:
-                  number: 3000
-
----
-apiVersion: autoscaling/v2
-kind: HorizontalPodAutoscaler
-metadata:
-  name: dov-hpa
-  namespace: dovns
-spec:
-  scaleTargetRef:
-    apiVersion: apps/v1
-    kind: Deployment
-    name: dov-deploy
-  minReplicas: 1
-  maxReplicas: 8
-  metrics:
-    - type: Resource
-      resource:
-        name: cpu
-        target:
-          type: Utilization
-          averageUtilization: 50
-    - type: Resource
-      resource:
-        name: memory
-        target:
-          type: Utilization
-          averageUtilization: 50
